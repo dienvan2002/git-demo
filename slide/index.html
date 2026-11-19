@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Cho Team Dev — Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Be+Vietnam+Pro:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0c0f13;
+      --panel: #151a21;
+      --panel2: #1d242e;
+      --line: #2b3440;
+      --fg: #e9edf1;
+      --mute: #95a2b1;
+      --git: #f05033;
+      --blue: #59a8ff;
+      --green: #45c46f;
+      --red: #ff6161;
+      --amber: #f3bb4f;
+      --violet: #ab90ff;
+      --r: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Be Vietnam Pro', sans-serif;
+      color: var(--fg);
+    }
+    #stage {
+      position: relative;
+      width: 1920px; height: 1080px;
+      background: var(--ink);
+      background-image: radial-gradient(circle, #2b3440 1px, transparent 1px);
+      background-size: 48px 48px;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+    .slide {
+      position: absolute; inset: 0;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.3s ease;
+      display: flex; flex-direction: column;
+      padding: 80px 100px;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+    .slide.divider {
+      align-items: center; justify-content: center; text-align: center;
+      background: radial-gradient(ellipse at center, #1a0f0a 0%, var(--ink) 70%);
+      padding: 80px 100px;
+    }
+    .slide.divider .num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 320px; font-weight: 800;
+      color: var(--git); opacity: 0.12;
+      line-height: 1; position: absolute;
+      user-select: none; letter-spacing: -10px;
+    }
+    .slide.divider h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 68px; font-weight: 800;
+      color: var(--fg); position: relative; z-index: 1;
+      margin-bottom: 20px; line-height: 1.15;
+    }
+    .slide.divider .part-label {
+      font-size: 22px; font-weight: 600; letter-spacing: 4px;
+      color: var(--git); text-transform: uppercase;
+      position: relative; z-index: 1; margin-bottom: 24px;
+    }
+    .slide.divider p.sub {
+      font-size: 26px; color: var(--mute); position: relative; z-index: 1;
+      max-width: 900px;
+    }
+    h2.slide-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 50px; font-weight: 700;
+      color: var(--fg);
+      border-bottom: 3px solid var(--git);
+      padding-bottom: 18px; margin-bottom: 36px;
+      flex-shrink: 0;
+    }
+    pre.term {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--git);
+      border-radius: var(--r);
+      padding: 20px 26px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 19px; line-height: 1.65;
+      color: var(--fg); overflow-x: auto;
+    }
+    pre.term .comment { color: var(--mute); font-style: italic; }
+    pre.term .cmd { color: var(--git); font-weight: 600; }
+    pre.term .str { color: var(--green); }
+    pre.term .flag { color: var(--blue); }
+    pre.term .kw { color: var(--violet); }
+    pre.term .num { color: var(--amber); }
+    .callout {
+      border-radius: var(--r); padding: 18px 22px;
+      font-size: 20px; border-left: 5px solid;
+      margin: 14px 0; line-height: 1.6;
+    }
+    .callout.info { background: rgba(89,168,255,0.1); border-color: var(--blue); color: var(--blue); }
+    .callout.warn { background: rgba(243,187,79,0.1); border-color: var(--amber); color: var(--amber); }
+    .callout.danger { background: rgba(255,97,97,0.12); border-color: var(--red); color: var(--red); }
+    .callout.tip { background: rgba(69,196,111,0.1); border-color: var(--green); color: var(--green); }
+    .callout strong { font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 20px; }
+    th { background: var(--panel2); color: var(--git); padding: 13px 16px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--line); }
+    td { padding: 11px 16px; border-bottom: 1px solid var(--line); line-height: 1.5; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    .grid { display: grid; gap: 22px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: var(--r); padding: 26px;
+    }
+    .card h3 { font-size: 24px; margin-bottom: 10px; color: var(--git); font-weight: 700; }
+    .card p, .card li { font-size: 18px; line-height: 1.65; color: var(--mute); }
+    .card ul { padding-left: 18px; }
+    .card pre.term { font-size: 16px; padding: 14px 18px; margin-top: 10px; }
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0; height: 3px;
+      background: var(--git); transition: width 0.3s ease;
+      z-index: 1000; box-shadow: 0 0 8px var(--git);
+    }
+    #counter {
+      position: fixed; bottom: 14px; right: 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px; color: var(--mute);
+      z-index: 1000;
+    }
+    .slide.cover { align-items: flex-start; justify-content: center; padding: 90px 140px; }
+    .cover .git-logo {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 380px; font-weight: 800;
+      color: var(--git); opacity: 0.06;
+      position: absolute; right: -20px; top: 50%;
+      transform: translateY(-50%);
+      user-select: none; letter-spacing: -20px;
+      pointer-events: none;
+    }
+    .cover h1 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 108px; font-weight: 800;
+      line-height: 1.0; color: var(--fg);
+    }
+    .cover h1 span { color: var(--git); }
+    .cover .subtitle { font-size: 28px; color: var(--mute); margin: 24px 0 44px; max-width: 920px; line-height: 1.6; }
+    .cover .presenter-row { display: flex; align-items: center; gap: 16px; }
+    .cover .presenter-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--git); display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; font-family: 'Bricolage Grotesque', sans-serif;
+      color: white; flex-shrink: 0;
+    }
+    .cover .presenter { font-size: 26px; color: var(--fg); font-weight: 600; }
+    .cover .presenter small { font-size: 18px; color: var(--mute); font-weight: 400; display: block; margin-top: 2px; }
+    .cover .tags { margin-top: 56px; display: flex; gap: 14px; flex-wrap: wrap; }
+    .cover .tag {
+      background: var(--panel); border: 1px solid var(--line);
+      color: var(--mute); border-radius: 999px;
+      padding: 7px 18px; font-size: 18px; font-weight: 500;
+    }
+    .cover .tag.git-tag { border-color: var(--git); color: var(--git); background: rgba(240,80,51,0.08); }
+    .cover .audience {
+      position: absolute; bottom: 56px; left: 140px;
+      font-size: 20px; color: var(--mute);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .cover .audience span { color: var(--line); }
+    .cover .accentline {
+      width: 80px; height: 5px; background: var(--git);
+      border-radius: 999px; margin-bottom: 32px;
+    }
+    .bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .bullets li { font-size: 23px; padding-left: 36px; position: relative; line-height: 1.55; }
+    .bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--git); }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+    .cols-6-4 { display: grid; grid-template-columns: 3fr 2fr; gap: 44px; }
+    .cols-4-6 { display: grid; grid-template-columns: 2fr 3fr; gap: 44px; }
+    .chip {
+      display: inline-block; border-radius: 4px; padding: 2px 10px;
+      font-family: 'JetBrains Mono', monospace; font-size: 17px;
+      background: var(--panel2); color: var(--git); border: 1px solid var(--line);
+    }
+    .hl-git { color: var(--git); font-weight: 700; }
+    .hl-blue { color: var(--blue); font-weight: 600; }
+    .hl-green { color: var(--green); font-weight: 600; }
+    .hl-red { color: var(--red); font-weight: 600; }
+    .hl-amber { color: var(--amber); font-weight: 600; }
+    .hl-violet { color: var(--violet); font-weight: 600; }
+    .section-label {
+      font-size: 13px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--git);
+      margin-bottom: 10px; display: block;
+    }
+    .badge {
+      display: inline-block; padding: 3px 12px; border-radius: 999px;
+      font-size: 15px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
+    }
+    .badge-green { background: rgba(69,196,111,0.15); color: var(--green); border: 1px solid rgba(69,196,111,0.3); }
+    .badge-red { background: rgba(255,97,97,0.15); color: var(--red); border: 1px solid rgba(255,97,97,0.3); }
+    .badge-amber { background: rgba(243,187,79,0.15); color: var(--amber); border: 1px solid rgba(243,187,79,0.3); }
+    .badge-blue { background: rgba(89,168,255,0.15); color: var(--blue); border: 1px solid rgba(89,168,255,0.3); }
+    .timeline-item { display: flex; gap: 24px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--line); }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-dot {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; margin-top: 2px;
+    }
+    .timeline-item h3 { font-size: 24px; font-weight: 700; color: var(--fg); margin-bottom: 6px; }
+    .timeline-item p { font-size: 19px; color: var(--mute); line-height: 1.55; }
+    .toc-card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: var(--r); padding: 28px 32px;
+      display: flex; align-items: flex-start; gap: 20px;
+    }
+    .toc-card .toc-icon { font-size: 36px; flex-shrink: 0; margin-top: 4px; }
+    .toc-card h3 { font-size: 24px; font-weight: 700; color: var(--fg); margin-bottom: 6px; }
+    .toc-card p { font-size: 18px; color: var(--mute); }
+    .toc-card .toc-time { font-size: 15px; color: var(--git); font-family: 'JetBrains Mono', monospace; margin-top: 8px; display: block; }
+    .area-box {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: var(--r); padding: 20px 24px;
+      text-align: center;
+    }
+    .area-box .area-label { font-size: 15px; color: var(--mute); margin-bottom: 8px; letter-spacing: 1px; }
+    .area-box .area-name { font-size: 22px; font-weight: 700; }
+    .arrow-label { font-size: 14px; color: var(--mute); font-family: 'JetBrains Mono', monospace; text-align: center; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--git); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; flex-shrink: 0;
+    }
+    .step-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+    .step-row .step-text { font-size: 20px; color: var(--fg); line-height: 1.5; padding-top: 6px; }
+    .step-row code {
+      font-family: 'JetBrains Mono', monospace; font-size: 17px;
+      background: var(--panel2); color: var(--git);
+      padding: 1px 8px; border-radius: 4px; border: 1px solid var(--line);
+    }
+    .cover-git-icon {
+      position: absolute; right: 100px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; user-select: none;
+    }
+  
+    /* Floating Navigation Controls */
+    #nav-controls {
+      position: fixed; bottom: 12px; right: 24px;
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(21, 26, 33, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 12px;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      user-select: none;
+    }
+    .nav-btn {
+      background: transparent; border: none;
+      color: var(--fg); font-size: 15px; font-weight: 600;
+      padding: 6px 12px; border-radius: 999px;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .nav-btn:hover { background: var(--panel2); color: var(--git); }
+    #counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; color: var(--mute);
+      padding: 0 6px; min-width: 55px; text-align: center;
+    }
+    .kbd-hint {
+      position: fixed; bottom: 14px; left: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; color: #5f6e82;
+      z-index: 1000; display: flex; gap: 8px; align-items: center;
+      user-select: none;
+    }
+    .kbd-hint kbd {
+      background: var(--panel2); border: 1px solid var(--line);
+      border-radius: 4px; padding: 1px 6px; font-size: 11px; color: var(--mute);
+    }
+
+    /* Slide Jump Modal */
+    #slide-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(12, 15, 19, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    #slide-modal.open { display: flex; }
+    .modal-box {
+      width: 90%; max-width: 1100px; max-height: 85vh;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 28px 32px;
+      display: flex; flex-direction: column; gap: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--line); padding-bottom: 16px;
+    }
+    .modal-header h3 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 24px; color: var(--fg);
+    }
+    .modal-close {
+      background: transparent; border: none; color: var(--mute);
+      font-size: 28px; cursor: pointer; line-height: 1; padding: 0 6px;
+    }
+    .modal-close:hover { color: var(--git); }
+    .modal-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px; overflow-y: auto; padding-right: 6px; max-height: calc(85vh - 120px);
+    }
+    .slide-thumb {
+      background: var(--panel2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 12px 14px;
+      cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .slide-thumb:hover {
+      border-color: var(--git); transform: translateY(-2px);
+      background: rgba(240, 80, 51, 0.08);
+    }
+    .slide-thumb.current {
+      border-color: var(--git); background: rgba(240, 80, 51, 0.15);
+    }
+    .slide-thumb .thumb-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--git); font-weight: 700; margin-bottom: 4px;
+    }
+    .slide-thumb .thumb-title {
+      font-size: 14px; font-weight: 600; color: var(--fg);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+  </style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 1 — COVER
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide cover active" data-title="Cover">
+    <div class="git-logo">git</div>
+    <div class="accentline"></div>
+    <h1>GIT CHO<br><span>TEAM DEV</span></h1>
+    <p class="subtitle">Từ Hiểu Bản Chất → Làm Chủ Quy Trình → Xử Lý Sự Cố Thực Chiến</p>
+    <div class="presenter-row">
+      <div class="presenter-avatar">D</div>
+      <div class="presenter">
+        Diện Nguyễn Duy
+        <small>Workshop Presenter · Git Enthusiast</small>
+      </div>
+    </div>
+    <div class="tags">
+      <span class="tag git-tag">#Git</span>
+      <span class="tag git-tag">#Dev</span>
+      <span class="tag git-tag">#Workshop</span>
+      <span class="tag">#VersionControl</span>
+      <span class="tag">#BestPractices</span>
+    </div>
+    <div class="audience">
+      Frontend <span>·</span> Backend <span>·</span> Mobile <span>·</span> QA/QC
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 2 — MỤC LỤC
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Mục Lục">
+    <h2 class="slide-title">🗺️ Lộ Trình Buổi Workshop</h2>
+    <div class="grid grid-2" style="gap:20px; flex:1;">
+      <div class="toc-card">
+        <div class="toc-icon">🎯</div>
+        <div>
+          <h3>Phần 1: Bản Chất &amp; Lịch Sử Git</h3>
+          <p>Tại sao Git ra đời? Điều gì làm nó trở nên thống trị?</p>
+          <span class="toc-time">⏱ 5 phút</span>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-icon">🧠</div>
+        <div>
+          <h3>Phần 2: Bản Chất Dữ Liệu &amp; 4 Vùng</h3>
+          <p>Snapshot, Hash SHA, HEAD, Detached HEAD và 4 vùng làm việc.</p>
+          <span class="toc-time">⏱ 10 phút</span>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-icon">⚙️</div>
+        <div>
+          <h3>Phần 3: Cơ Chế &amp; Câu Lệnh Cốt Lõi</h3>
+          <p>Merge, Rebase, Reset, Cherry-pick, Worktree &amp; Tag.</p>
+          <span class="toc-time">⏱ 15 phút</span>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-icon">👥</div>
+        <div>
+          <h3>Phần 4: Quy Trình Team &amp; Hooks</h3>
+          <p>GitHub Flow, Conventional Commits, Husky &amp; tự động hoá.</p>
+          <span class="toc-time">⏱ 10 phút</span>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-icon">🔥</div>
+        <div>
+          <h3>Phần 5: Live Demo Thực Chiến</h3>
+          <p>7 tình huống thực tế — từ merge conflict đến rò rỉ secret.</p>
+          <span class="toc-time">⏱ 35 phút</span>
+        </div>
+      </div>
+      <div class="toc-card" style="border-color: var(--git); background: rgba(240,80,51,0.05);">
+        <div class="toc-icon">🎮</div>
+        <div>
+          <h3>Phần 6: Kahoot Đấu Trí</h3>
+          <p>12 câu hỏi kiểm tra kiến thức, giành TOP 3 phần thưởng!</p>
+          <span class="toc-time">⏱ 15 phút</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:18px; text-align:center;">
+      <span style="font-size:18px; color:var(--mute);">Tổng thời gian: </span>
+      <span style="font-size:22px; font-weight:700; color:var(--git); font-family:'JetBrains Mono',monospace;">90 phút</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 3 — DIVIDER: Phần 1
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide divider" data-title="Phần 1">
+    <div class="num">01</div>
+    <div class="part-label">Phần Một</div>
+    <h1>Sự Ra Đời &amp; Lợi Ích<br>Cốt Lõi Của Git</h1>
+    <p class="sub">Năm 2005 — Linus Torvalds &amp; Bài Toán Linux Kernel</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 4 — LỊCH SỬ 2005
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Câu Chuyện 2005">
+    <h2 class="slide-title">📖 Câu Chuyện Năm 2005</h2>
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:space-around;">
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:rgba(89,168,255,0.15); border:2px solid var(--blue); color:var(--blue);">📅</div>
+        <div>
+          <h3><span class="hl-blue">Trước 2005:</span> Thời đại BitKeeper</h3>
+          <p>Linux Kernel — dự án mã nguồn mở lớn nhất thế giới — dùng <strong style="color:var(--fg)">BitKeeper</strong>, một phần mềm kiểm soát phiên bản <span class="hl-amber">độc quyền &amp; thương mại</span>. Cộng đồng được dùng miễn phí theo thoả thuận đặc biệt.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:rgba(255,97,97,0.15); border:2px solid var(--red); color:var(--red);">💥</div>
+        <div>
+          <h3><span class="hl-red">Khủng hoảng:</span> BitKeeper Thu Hồi Giấy Phép</h3>
+          <p>BitMover (công ty sau BitKeeper) <span class="hl-red">thu hồi giấy phép miễn phí</span> sau khi phát hiện thành viên cộng đồng reverse-engineer giao thức của họ. Toàn bộ cộng đồng Linux bị khoá khỏi hệ thống quản lý source code!</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:rgba(240,80,51,0.15); border:2px solid var(--git); color:var(--git);">⚡</div>
+        <div>
+          <h3><span class="hl-git">Giải pháp:</span> Linus Tự Viết Git</h3>
+          <p>Linus Torvalds quyết định tự xây dựng hệ thống mới. Chỉ trong <span class="hl-git">vài tuần</span>, phiên bản đầu tiên của <span class="hl-git">Git</span> ra đời. Ngày <strong style="color:var(--fg)">7 tháng 4 năm 2005</strong> — commit đầu tiên được tạo ra!</p>
+        </div>
+      </div>
+      <div class="callout info" style="margin-top:0;">
+        <strong>Tiêu chí thiết kế của Linus:</strong> &nbsp;
+        <span class="badge badge-blue">Phân tán (DVCS)</span> &nbsp;
+        <span class="badge badge-blue">Siêu nhanh</span> &nbsp;
+        <span class="badge badge-blue">Phi tuyến tính</span> &nbsp;
+        <span class="badge badge-blue">Toàn vẹn dữ liệu</span> &nbsp;
+        <span class="badge badge-blue">Mã nguồn mở</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 5 — TẠI SAO GIT LÀ BẮT BUỘC
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="5 Lý Do Git">
+    <h2 class="slide-title">🏆 5 Lý Do Git Là Công Cụ Bắt Buộc</h2>
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:20px; flex:1;">
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🌐 Kiến Trúc Phân Tán (DVCS)</h3>
+        <p>Mỗi developer có <span style="color:var(--blue)">toàn bộ lịch sử dự án</span> ngay trên máy mình. Làm việc offline hoàn toàn — commit, branch, merge không cần internet. Server chỉ là điểm đồng bộ.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--green);">
+        <h3>⚡ Tạo Nhánh Siêu Nhẹ</h3>
+        <p>Branch trong Git chỉ là <span style="color:var(--green)">một file 41 bytes</span> chứa con trỏ SHA. Tạo &amp; chuyển nhánh trong <strong style="color:var(--fg)">mili-giây</strong>. Tạo bao nhiêu branch tuỳ thích, không tốn tài nguyên.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--amber);">
+        <h3>🔒 Toàn Vẹn Dữ Liệu</h3>
+        <p>Mọi commit, file, tree đều được checksum bằng <span style="color:var(--amber)">SHA-1 / SHA-256</span>. Không ai có thể thay đổi lịch sử commit mà không bị phát hiện ngay lập tức.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎯 Staging Area Độc Đáo</h3>
+        <p>Vùng trung gian cho phép <span style="color:var(--violet)">chọn lọc chính xác</span> thay đổi nào sẽ vào commit. Dùng <code style="font-family:monospace; color:var(--git);">git add -p</code> để commit từng hunk — commit mạch lạc, dễ review.</p>
+      </div>
+      <div class="card" style="grid-column: 1/-1; border-left:4px solid var(--red); background: rgba(255,97,97,0.05);">
+        <h3>🚑 Khả Năng Phục Hồi Vô Song</h3>
+        <p style="font-size:20px;"><code style="font-family:monospace; color:var(--git);">reflog</code> — <code style="font-family:monospace; color:var(--git);">revert</code> — <code style="font-family:monospace; color:var(--git);">reset</code> — <code style="font-family:monospace; color:var(--git);">cherry-pick</code> &nbsp;→&nbsp; Git <span style="color:var(--red)">luôn có cứu hộ</span> cho mọi sự cố. Gần như không có gì bị mất vĩnh viễn trong 30 ngày đầu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 6 — DIVIDER: Phần 2
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide divider" data-title="Phần 2">
+    <div class="num">02</div>
+    <div class="part-label">Phần Hai</div>
+    <h1>Bản Chất Dữ Liệu<br>&amp; 4 Vùng Làm Việc</h1>
+    <p class="sub">Snapshot, Hash, HEAD &amp; Detached HEAD</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 7 — SNAPSHOT VS DIFF
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Snapshot vs Diff">
+    <h2 class="slide-title">📸 Commit Là "Ảnh Chụp" (Snapshot), Không Phải Bản Vá</h2>
+    <div class="cols" style="flex:1; gap:32px;">
+      <div>
+        <div class="card" style="border:2px solid var(--red); height:100%;">
+          <div style="text-align:center; margin-bottom:16px;">
+            <span style="font-size:28px;">❌</span>
+            <span style="font-size:16px; color:var(--red); font-weight:700; margin-left:8px; letter-spacing:2px;">SVN / CVS</span>
+          </div>
+          <h3 style="color:var(--red); text-align:center; font-size:22px;">Lưu danh sách thay đổi<br>(Diff / Delta)</h3>
+          <svg viewBox="0 0 320 200" style="width:100%; margin-top:16px;">
+            <defs><marker id="arr-r" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ff6161"/></marker></defs>
+            <rect x="10" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#ff6161" stroke-width="1.5"/>
+            <text x="40" y="41" text-anchor="middle" fill="#e9edf1" font-size="12" font-family="JetBrains Mono">v1</text>
+            <line x1="70" y1="36" x2="90" y2="36" stroke="#ff6161" stroke-width="1.5" marker-end="url(#arr-r)"/>
+            <rect x="90" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#ff6161" stroke-width="1.5"/>
+            <text x="120" y="41" text-anchor="middle" fill="#ff6161" font-size="11" font-family="JetBrains Mono">Δ1</text>
+            <line x1="150" y1="36" x2="170" y2="36" stroke="#ff6161" stroke-width="1.5" marker-end="url(#arr-r)"/>
+            <rect x="170" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#ff6161" stroke-width="1.5"/>
+            <text x="200" y="41" text-anchor="middle" fill="#ff6161" font-size="11" font-family="JetBrains Mono">Δ2</text>
+            <line x1="230" y1="36" x2="250" y2="36" stroke="#ff6161" stroke-width="1.5" marker-end="url(#arr-r)"/>
+            <rect x="250" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#ff6161" stroke-width="1.5"/>
+            <text x="280" y="41" text-anchor="middle" fill="#ff6161" font-size="11" font-family="JetBrains Mono">Δ3</text>
+            <text x="160" y="110" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="Be Vietnam Pro">Để lấy v4 phải tính</text>
+            <text x="160" y="130" text-anchor="middle" fill="#ff6161" font-size="13" font-family="Be Vietnam Pro">v1 + Δ1 + Δ2 + Δ3...</text>
+            <text x="160" y="160" text-anchor="middle" fill="#95a2b1" font-size="12" font-family="Be Vietnam Pro">(Chậm khi lịch sử dài)</text>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="border:2px solid var(--green); height:100%;">
+          <div style="text-align:center; margin-bottom:16px;">
+            <span style="font-size:28px;">✅</span>
+            <span style="font-size:16px; color:var(--green); font-weight:700; margin-left:8px; letter-spacing:2px;">GIT</span>
+          </div>
+          <h3 style="color:var(--green); text-align:center; font-size:22px;">Lưu toàn bộ trạng thái<br>(Snapshot)</h3>
+          <svg viewBox="0 0 320 200" style="width:100%; margin-top:16px;">
+            <defs><marker id="arr-g" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#45c46f"/></marker></defs>
+            <rect x="10" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#45c46f" stroke-width="1.5"/>
+            <text x="40" y="41" text-anchor="middle" fill="#45c46f" font-size="11" font-family="JetBrains Mono">S1</text>
+            <line x1="70" y1="36" x2="90" y2="36" stroke="#45c46f" stroke-width="1.5" marker-end="url(#arr-g)"/>
+            <rect x="90" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#45c46f" stroke-width="1.5"/>
+            <text x="120" y="41" text-anchor="middle" fill="#45c46f" font-size="11" font-family="JetBrains Mono">S2</text>
+            <line x1="150" y1="36" x2="170" y2="36" stroke="#45c46f" stroke-width="1.5" marker-end="url(#arr-g)"/>
+            <rect x="170" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#45c46f" stroke-width="1.5"/>
+            <text x="200" y="41" text-anchor="middle" fill="#45c46f" font-size="11" font-family="JetBrains Mono">S3</text>
+            <line x1="230" y1="36" x2="250" y2="36" stroke="#45c46f" stroke-width="1.5" marker-end="url(#arr-g)"/>
+            <rect x="250" y="20" width="60" height="32" rx="6" fill="#1d242e" stroke="#45c46f" stroke-width="1.5"/>
+            <text x="280" y="41" text-anchor="middle" fill="#45c46f" font-size="11" font-family="JetBrains Mono">S4</text>
+            <text x="160" y="110" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="Be Vietnam Pro">Mỗi snapshot = ảnh hoàn chỉnh</text>
+            <text x="160" y="130" text-anchor="middle" fill="#45c46f" font-size="13" font-family="Be Vietnam Pro">Truy cập tức thì, không tính toán</text>
+            <text x="160" y="160" text-anchor="middle" fill="#95a2b1" font-size="12" font-family="Be Vietnam Pro">(File giống nhau → dùng lại pointer)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="callout warn" style="margin-top:16px;">
+      <strong>Hash SHA-1/SHA-256:</strong> Mỗi commit = chuỗi <span style="font-family:'JetBrains Mono',monospace; color:var(--fg);">40 ký tự</span> duy nhất, tính từ: <em>Nội dung code + Metadata + Hash của commit cha</em>.
+      &nbsp;→&nbsp; <strong>Commit là BẤT BIẾN (Immutable)</strong> — "Sửa commit" = tạo commit mới với Hash hoàn toàn mới!
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 8 — 4 VÙNG LÀM VIỆC
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="4 Vùng Làm Việc">
+    <h2 class="slide-title">🗂️ Bức Tranh 4 Vùng Làm Việc</h2>
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+      <svg viewBox="0 0 1600 480" style="width:100%; max-height:380px;">
+        <defs>
+          <marker id="a1" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L0,8 L8,4 z" fill="#f05033"/>
+          </marker>
+          <marker id="a2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L0,8 L8,4 z" fill="#59a8ff"/>
+          </marker>
+          <marker id="a3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L0,8 L8,4 z" fill="#45c46f"/>
+          </marker>
+        </defs>
+
+        <!-- Working Directory -->
+        <rect x="30" y="80" width="300" height="200" rx="14" fill="#151a21" stroke="#59a8ff" stroke-width="2.5"/>
+        <rect x="30" y="80" width="300" height="48" rx="14" fill="#59a8ff" fill-opacity="0.15"/>
+        <rect x="30" y="114" width="300" height="14" fill="#59a8ff" fill-opacity="0.15"/>
+        <text x="180" y="114" text-anchor="middle" fill="#59a8ff" font-size="20" font-weight="700" font-family="Bricolage Grotesque">Working Directory</text>
+        <text x="180" y="158" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Thư mục làm việc thực tế</text>
+        <text x="180" y="184" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Nơi bạn edit code</text>
+        <text x="180" y="232" text-anchor="middle" fill="#2b3440" font-size="40" font-family="JetBrains Mono" font-weight="800">📁</text>
+
+        <!-- Arrow 1: git add -->
+        <line x1="332" y1="180" x2="488" y2="180" stroke="#f05033" stroke-width="3" marker-end="url(#a1)"/>
+        <rect x="348" y="155" width="124" height="28" rx="6" fill="#1d242e"/>
+        <text x="410" y="174" text-anchor="middle" fill="#f05033" font-size="16" font-weight="700" font-family="JetBrains Mono">git add</text>
+
+        <!-- Arrow back: git restore -->
+        <line x1="490" y1="210" x2="334" y2="210" stroke="#59a8ff" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#a2)"/>
+        <text x="410" y="232" text-anchor="middle" fill="#59a8ff" font-size="13" font-family="JetBrains Mono">git restore</text>
+
+        <!-- Staging Area -->
+        <rect x="490" y="80" width="300" height="200" rx="14" fill="#151a21" stroke="#ab90ff" stroke-width="2.5"/>
+        <rect x="490" y="80" width="300" height="48" rx="14" fill="#ab90ff" fill-opacity="0.15"/>
+        <rect x="490" y="114" width="300" height="14" fill="#ab90ff" fill-opacity="0.15"/>
+        <text x="640" y="114" text-anchor="middle" fill="#ab90ff" font-size="20" font-weight="700" font-family="Bricolage Grotesque">Staging Area</text>
+        <text x="640" y="158" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Vùng trung gian (Index)</text>
+        <text x="640" y="184" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Chọn lọc thay đổi</text>
+        <text x="640" y="232" text-anchor="middle" fill="#2b3440" font-size="40" font-family="JetBrains Mono" font-weight="800">📋</text>
+
+        <!-- Arrow 2: git commit -->
+        <line x1="792" y1="180" x2="948" y2="180" stroke="#f05033" stroke-width="3" marker-end="url(#a1)"/>
+        <rect x="808" y="155" width="124" height="28" rx="6" fill="#1d242e"/>
+        <text x="870" y="174" text-anchor="middle" fill="#f05033" font-size="16" font-weight="700" font-family="JetBrains Mono">git commit</text>
+
+        <!-- Arrow back: git reset HEAD -->
+        <line x1="950" y1="210" x2="794" y2="210" stroke="#ab90ff" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#a2)"/>
+        <text x="870" y="234" text-anchor="middle" fill="#ab90ff" font-size="13" font-family="JetBrains Mono">git reset HEAD</text>
+
+        <!-- Local Repo -->
+        <rect x="950" y="80" width="300" height="200" rx="14" fill="#151a21" stroke="#f05033" stroke-width="2.5"/>
+        <rect x="950" y="80" width="300" height="48" rx="14" fill="#f05033" fill-opacity="0.15"/>
+        <rect x="950" y="114" width="300" height="14" fill="#f05033" fill-opacity="0.15"/>
+        <text x="1100" y="114" text-anchor="middle" fill="#f05033" font-size="20" font-weight="700" font-family="Bricolage Grotesque">Local Repository</text>
+        <text x="1100" y="158" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Kho lưu trữ trên máy</text>
+        <text x="1100" y="184" text-anchor="middle" fill="#95a2b1" font-size="16" font-family="Be Vietnam Pro">Toàn bộ lịch sử commit</text>
+        <text x="1100" y="232" text-anchor="middle" fill="#2b3440" font-size="40" font-family="JetBrains Mono" font-weight="800">💾</text>
+
+        <!-- Arrow 3: git push -->
+        <line x1="1252" y1="180" x2="1408" y2="180" stroke="#45c46f" stroke-width="3" marker-end="url(#a3)"/>
+        <rect x="1268" y="155" width="124" height="28" rx="6" fill="#1d242e"/>
+        <text x="1330" y="174" text-anchor="middle" fill="#45c46f" font-size="16" font-weight="700" font-family="JetBrains Mono">git push</text>
+
+        <!-- Arrow back: git fetch/pull -->
+        <line x1="1410" y1="210" x2="1254" y2="210" stroke="#45c46f" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#a3)"/>
+        <text x="1330" y="234" text-anchor="middle" fill="#45c46f" font-size="13" font-family="JetBrains Mono">git fetch/pull</text>
+
+        <!-- Remote Repo -->
+        <rect x="1410" y="80" width="160" height="200" rx="14" fill="#151a21" stroke="#45c46f" stroke-width="2.5"/>
+        <rect x="1410" y="80" width="160" height="48" rx="14" fill="#45c46f" fill-opacity="0.15"/>
+        <rect x="1410" y="114" width="160" height="14" fill="#45c46f" fill-opacity="0.15"/>
+        <text x="1490" y="109" text-anchor="middle" fill="#45c46f" font-size="17" font-weight="700" font-family="Bricolage Grotesque">Remote</text>
+        <text x="1490" y="130" text-anchor="middle" fill="#45c46f" font-size="17" font-weight="700" font-family="Bricolage Grotesque">Repo</text>
+        <text x="1490" y="162" text-anchor="middle" fill="#95a2b1" font-size="14" font-family="Be Vietnam Pro">GitHub</text>
+        <text x="1490" y="183" text-anchor="middle" fill="#95a2b1" font-size="14" font-family="Be Vietnam Pro">GitLab</text>
+        <text x="1490" y="204" text-anchor="middle" fill="#95a2b1" font-size="14" font-family="Be Vietnam Pro">Bitbucket</text>
+        <text x="1490" y="240" text-anchor="middle" fill="#2b3440" font-size="36" font-family="JetBrains Mono" font-weight="800">☁️</text>
+
+        <!-- Bottom labels -->
+        <text x="180" y="330" text-anchor="middle" fill="#2b3440" font-size="16" font-family="Be Vietnam Pro" fill-opacity="0">.</text>
+        <!-- git checkout / restore label -->
+        <line x1="640" y1="300" x2="30" y2="300" stroke="#2b3440" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <text x="334" y="380" text-anchor="middle" fill="#95a2b1" font-size="15" font-family="JetBrains Mono">git checkout / git restore &lt;file&gt;</text>
+
+        <!-- git stash label -->
+        <text x="180" y="420" text-anchor="middle" fill="#f3bb4f" font-size="17" font-family="Be Vietnam Pro">💡 <tspan font-family="JetBrains Mono" fill="#f3bb4f">git stash</tspan> — Cất tạm thay đổi, chuyển nhánh nhanh</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 9 — HEAD & DETACHED HEAD
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="HEAD & Detached HEAD">
+    <h2 class="slide-title">🧭 Con Trỏ HEAD &amp; Trạng Thái Detached HEAD</h2>
+    <div class="cols" style="flex:1; gap:32px;">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card" style="border-top:3px solid var(--green);">
+          <h3 style="color:var(--green);">✅ HEAD Bình Thường</h3>
+          <svg viewBox="0 0 360 110" style="width:100%; margin:12px 0;">
+            <defs><marker id="ah" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#45c46f"/></marker></defs>
+            <rect x="10" y="30" width="80" height="34" rx="8" fill="#1a2a1a" stroke="#45c46f" stroke-width="2"/>
+            <text x="50" y="52" text-anchor="middle" fill="#45c46f" font-size="16" font-weight="700" font-family="JetBrains Mono">HEAD</text>
+            <line x1="90" y1="47" x2="118" y2="47" stroke="#45c46f" stroke-width="2" marker-end="url(#ah)"/>
+            <rect x="120" y="30" width="80" height="34" rx="8" fill="#151a21" stroke="#ab90ff" stroke-width="2"/>
+            <text x="160" y="52" text-anchor="middle" fill="#ab90ff" font-size="15" font-weight="700" font-family="JetBrains Mono">main</text>
+            <line x1="200" y1="47" x2="228" y2="47" stroke="#45c46f" stroke-width="2" marker-end="url(#ah)"/>
+            <rect x="230" y="30" width="90" height="34" rx="8" fill="#151a21" stroke="#f05033" stroke-width="2"/>
+            <text x="275" y="52" text-anchor="middle" fill="#f05033" font-size="14" font-weight="700" font-family="JetBrains Mono">C3 (tip)</text>
+            <text x="50" y="90" text-anchor="middle" fill="#95a2b1" font-size="12" font-family="Be Vietnam Pro">con trỏ HEAD</text>
+            <text x="160" y="90" text-anchor="middle" fill="#95a2b1" font-size="12" font-family="Be Vietnam Pro">branch label</text>
+            <text x="275" y="90" text-anchor="middle" fill="#95a2b1" font-size="12" font-family="Be Vietnam Pro">commit mới nhất</text>
+          </svg>
+          <p style="font-size:17px; color:var(--mute);">HEAD → branch → commit. Khi bạn tạo commit mới, branch label tự động tiến lên.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--red);">
+          <h3 style="color:var(--red);">⚠️ Detached HEAD</h3>
+          <svg viewBox="0 0 360 110" style="width:100%; margin:12px 0;">
+            <defs><marker id="adh" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#ff6161"/></marker></defs>
+            <rect x="10" y="30" width="80" height="34" rx="8" fill="#2a1a1a" stroke="#ff6161" stroke-width="2"/>
+            <text x="50" y="52" text-anchor="middle" fill="#ff6161" font-size="16" font-weight="700" font-family="JetBrains Mono">HEAD</text>
+            <line x1="90" y1="47" x2="228" y2="47" stroke="#ff6161" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#adh)"/>
+            <rect x="230" y="30" width="90" height="34" rx="8" fill="#151a21" stroke="#f05033" stroke-width="2"/>
+            <text x="275" y="52" text-anchor="middle" fill="#f05033" font-size="14" font-weight="700" font-family="JetBrains Mono">C2 !</text>
+            <text x="160" y="90" text-anchor="middle" fill="#ff6161" font-size="13" font-family="Be Vietnam Pro">HEAD trỏ thẳng vào commit cũ!</text>
+          </svg>
+          <p style="font-size:17px; color:var(--mute);">HEAD trỏ thẳng vào commit, không qua branch. Commit trong trạng thái này có thể <span style="color:var(--red)">bị mất</span>.</p>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <pre class="term"><span class="comment"># Gây ra Detached HEAD</span>
+<span class="cmd">git checkout</span> <span class="num">abc1234</span>
+
+<span class="comment"># Xem trạng thái</span>
+<span class="cmd">git status</span>
+<span class="str">HEAD detached at abc1234</span>
+
+<span class="comment"># Thoát — Bỏ thay đổi</span>
+<span class="cmd">git checkout</span> main
+
+<span class="comment"># Thoát — Giữ thay đổi thành branch mới</span>
+<span class="cmd">git checkout</span> <span class="flag">-b</span> hot-fix</pre>
+        <div class="callout danger">
+          <strong>⚠️ Cảnh Báo Quan Trọng:</strong><br>
+          Nếu bạn commit trong Detached HEAD và checkout sang branch khác → commit đó sẽ <strong>BỊ MẤT</strong> (garbage collected sau ~30 ngày)! Hãy luôn tạo branch mới trước khi commit.
+        </div>
+        <div class="callout tip">
+          <strong>💡 Trường hợp hữu ích:</strong> Detached HEAD rất có ích khi bạn muốn <strong>kiểm tra code cũ</strong> mà không tạo branch. Chỉ cần đọc, không commit thì hoàn toàn an toàn.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 10 — DIVIDER: Phần 3
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide divider" data-title="Phần 3">
+    <div class="num">03</div>
+    <div class="part-label">Phần Ba</div>
+    <h1>Giải Mã Cơ Chế<br>&amp; Câu Lệnh Cốt Lõi</h1>
+    <p class="sub">Merge, Rebase, Reset, Cherry-pick &amp; Worktree</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 11 — FAST-FORWARD VS NO-FF
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Fast-Forward vs --no-ff">
+    <h2 class="slide-title">🔀 Fast-Forward vs --no-ff: Khi Nào Dùng Gì?</h2>
+    <div class="cols" style="flex:1; gap:32px;">
+      <div>
+        <table style="margin-bottom:20px;">
+          <thead>
+            <tr>
+              <th></th>
+              <th style="color:var(--blue);">Fast-Forward (mặc định)</th>
+              <th style="color:var(--green);">--no-ff (khuyên dùng)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--mute); font-weight:600;">Lịch sử</td>
+              <td>Thẳng tắp, sạch sẽ</td>
+              <td>Có merge commit, rõ ràng</td>
+            </tr>
+            <tr>
+              <td style="color:var(--mute); font-weight:600;">Truy vết</td>
+              <td style="color:var(--red);">Khó biết tính năng nào đâu</td>
+              <td style="color:var(--green);">Dễ thấy từng feature branch</td>
+            </tr>
+            <tr>
+              <td style="color:var(--mute); font-weight:600;">Revert</td>
+              <td style="color:var(--red);">Khó (không có điểm rõ ràng)</td>
+              <td style="color:var(--green);">Dễ: <code style="font-family:monospace; color:var(--git); font-size:14px;">git revert &lt;merge-commit&gt;</code></td>
+            </tr>
+            <tr>
+              <td style="color:var(--mute); font-weight:600;">Khuyên dùng</td>
+              <td>Merge cá nhân, local cleanup</td>
+              <td style="color:var(--green); font-weight:700;">✅ Merge PR vào main/develop</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre class="term"><span class="comment"># Merge với --no-ff (tạo merge commit)</span>
+<span class="cmd">git merge</span> feature/login <span class="flag">--no-ff</span> <span class="flag">-m</span> <span class="str">"merge: feature login vào develop"</span>
+
+<span class="comment"># Xem graph lịch sử đẹp</span>
+<span class="cmd">git log</span> <span class="flag">--oneline</span> <span class="flag">--graph</span> <span class="flag">--all</span></pre>
+      </div>
+      <div>
+        <svg viewBox="0 0 500 400" style="width:100%; background:var(--panel); border-radius:12px; border:1px solid var(--line); padding:10px;">
+          <defs>
+            <marker id="mff" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#2b3440"/>
+            </marker>
+            <marker id="mnff" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+              <path d="M0,0 L0,7 L7,3.5 z" fill="#45c46f"/>
+            </marker>
+          </defs>
+          <!-- Fast-Forward label -->
+          <text x="250" y="28" text-anchor="middle" fill="#59a8ff" font-size="16" font-weight="700" font-family="Bricolage Grotesque">Fast-Forward</text>
+          <!-- Commits inline -->
+          <circle cx="50" cy="70" r="18" fill="#1d242e" stroke="#2b3440" stroke-width="2"/>
+          <text x="50" y="75" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="JetBrains Mono">A</text>
+          <line x1="68" y1="70" x2="92" y2="70" stroke="#2b3440" stroke-width="2" marker-end="url(#mff)"/>
+          <circle cx="110" cy="70" r="18" fill="#1d242e" stroke="#2b3440" stroke-width="2"/>
+          <text x="110" y="75" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="JetBrains Mono">B</text>
+          <line x1="128" y1="70" x2="152" y2="70" stroke="#2b3440" stroke-width="2" marker-end="url(#mff)"/>
+          <circle cx="170" cy="70" r="18" fill="#1d242e" stroke="#f05033" stroke-width="2"/>
+          <text x="170" y="75" text-anchor="middle" fill="#f05033" font-size="13" font-family="JetBrains Mono">C</text>
+          <line x1="188" y1="70" x2="212" y2="70" stroke="#2b3440" stroke-width="2" marker-end="url(#mff)"/>
+          <circle cx="230" cy="70" r="18" fill="#1d242e" stroke="#f05033" stroke-width="2"/>
+          <text x="230" y="75" text-anchor="middle" fill="#f05033" font-size="13" font-family="JetBrains Mono">D</text>
+          <text x="200" y="118" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="Be Vietnam Pro">Lịch sử phẳng — không thấy</text>
+          <text x="200" y="136" text-anchor="middle" fill="#ff6161" font-size="13" font-family="Be Vietnam Pro">feature branch từ đâu tới!</text>
+          <text x="40" y="96" text-anchor="middle" fill="#95a2b1" font-size="11" font-family="JetBrains Mono">main</text>
+          <text x="236" y="96" text-anchor="middle" fill="#f05033" font-size="11" font-family="JetBrains Mono">feature</text>
+
+          <!-- Divider -->
+          <line x1="20" y1="165" x2="480" y2="165" stroke="#2b3440" stroke-width="1" stroke-dasharray="6,4"/>
+
+          <!-- No-FF label -->
+          <text x="250" y="195" text-anchor="middle" fill="#45c46f" font-size="16" font-weight="700" font-family="Bricolage Grotesque">--no-ff (Merge Commit)</text>
+          <!-- Main commits -->
+          <circle cx="50" cy="300" r="18" fill="#1d242e" stroke="#2b3440" stroke-width="2"/>
+          <text x="50" y="305" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="JetBrains Mono">A</text>
+          <line x1="68" y1="300" x2="92" y2="300" stroke="#2b3440" stroke-width="2" marker-end="url(#mff)"/>
+          <circle cx="110" cy="300" r="18" fill="#1d242e" stroke="#2b3440" stroke-width="2"/>
+          <text x="110" y="305" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="JetBrains Mono">B</text>
+          <!-- Feature commits -->
+          <line x1="118" y1="285" x2="158" y2="240" stroke="#2b3440" stroke-width="2" marker-end="url(#mff)"/>
+          <circle cx="175" cy="230" r="18" fill="#1d242e" stroke="#f05033" stroke-width="2"/>
+          <text x="175" y="235" text-anchor="middle" fill="#f05033" font-size="13" font-family="JetBrains Mono">C</text>
+          <line x1="193" y1="230" x2="227" y2="230" stroke="#f05033" stroke-width="2" marker-end="url(#mnff)"/>
+          <circle cx="245" cy="230" r="18" fill="#1d242e" stroke="#f05033" stroke-width="2"/>
+          <text x="245" y="235" text-anchor="middle" fill="#f05033" font-size="13" font-family="JetBrains Mono">D</text>
+          <!-- Merge commit -->
+          <line x1="263" y1="245" x2="303" y2="285" stroke="#45c46f" stroke-width="2" marker-end="url(#mnff)"/>
+          <circle cx="320" cy="300" r="20" fill="#1a2a1a" stroke="#45c46f" stroke-width="2.5"/>
+          <text x="320" y="305" text-anchor="middle" fill="#45c46f" font-size="12" font-weight="700" font-family="JetBrains Mono">M</text>
+          <text x="128" y="225" text-anchor="middle" fill="#f05033" font-size="11" font-family="JetBrains Mono">feature/login</text>
+          <text x="320" y="332" text-anchor="middle" fill="#45c46f" font-size="11" font-family="JetBrains Mono">merge commit</text>
+          <text x="265" y="378" text-anchor="middle" fill="#45c46f" font-size="13" font-family="Be Vietnam Pro">Lịch sử rõ ràng — thấy ngay</text>
+          <text x="265" y="396" text-anchor="middle" fill="#45c46f" font-size="13" font-family="Be Vietnam Pro">feature branch từ đâu tới!</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 12 — MERGE VS REBASE
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Merge vs Rebase">
+    <h2 class="slide-title">⚔️ git merge vs git rebase — Hiểu Đúng Để Không Hối Hận</h2>
+    <div style="flex:1; display:flex; flex-direction:column; gap:18px;">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th style="color:var(--blue);">git merge</th>
+            <th style="color:var(--violet);">git rebase</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--mute); font-weight:600;">Lịch sử</td>
+            <td>Giữ nguyên, có merge commit</td>
+            <td>Viết lại thành đường thẳng</td>
+          </tr>
+          <tr>
+            <td style="color:var(--mute); font-weight:600;">Conflict</td>
+            <td>Giải quyết 1 lần duy nhất</td>
+            <td>Có thể giải quyết từng commit</td>
+          </tr>
+          <tr>
+            <td style="color:var(--mute); font-weight:600;">An toàn</td>
+            <td style="color:var(--green);">✅ Luôn an toàn</td>
+            <td style="color:var(--amber);">⚠️ KHÔNG dùng trên nhánh đã push</td>
+          </tr>
+          <tr>
+            <td style="color:var(--mute); font-weight:600;">Dùng khi</td>
+            <td>Merge feature vào main/develop</td>
+            <td>Cập nhật feature branch từ main</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout danger">
+        <strong>🚫 GOLDEN RULE:</strong> Không bao giờ <code style="font-family:monospace; font-size:17px; color:var(--fg);">rebase</code> branch đã được push lên remote và người khác đang sử dụng! Vì rebase viết lại history → gây ra diverged branch cho mọi người.
+      </div>
+      <pre class="term"><span class="comment"># ✅ Cập nhật feature branch từ main (an toàn với rebase)</span>
+<span class="cmd">git checkout</span> feature/my-feature
+<span class="cmd">git rebase</span> main
+
+<span class="comment"># ✅ Pull sạch — không tạo merge commit thừa</span>
+<span class="cmd">git pull</span> <span class="flag">--rebase</span> origin main
+
+<span class="comment"># Nếu có conflict khi rebase</span>
+<span class="comment"># Giải quyết conflict rồi:</span>
+<span class="cmd">git add</span> .
+<span class="cmd">git rebase</span> <span class="flag">--continue</span>   <span class="comment"># tiếp tục</span>
+<span class="comment"># Hoặc:</span>
+<span class="cmd">git rebase</span> <span class="flag">--abort</span>      <span class="comment"># huỷ toàn bộ rebase</span></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 13 — RESET 3 CẤP ĐỘ
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="git reset 3 Cấp Độ">
+    <h2 class="slide-title">💣 git reset — 3 Cấp Độ Uy Lực</h2>
+    <div style="flex:1; display:flex; flex-direction:column; gap:18px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Lệnh</th>
+            <th>Working Directory</th>
+            <th>Staging Area</th>
+            <th>Commit History</th>
+            <th>Dùng Khi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(69,196,111,0.05);">
+            <td><code style="font-family:monospace; color:var(--green); font-size:17px;">--soft</code></td>
+            <td style="color:var(--green);">✅ Giữ nguyên</td>
+            <td style="color:var(--green);">✅ Giữ nguyên</td>
+            <td style="color:var(--amber);">🔄 Xoá commit</td>
+            <td style="color:var(--mute);">Muốn gộp lại commit, sửa message</td>
+          </tr>
+          <tr style="background:rgba(243,187,79,0.05);">
+            <td><code style="font-family:monospace; color:var(--amber); font-size:17px;">--mixed</code> <span style="font-size:13px; color:var(--mute);">(default)</span></td>
+            <td style="color:var(--green);">✅ Giữ nguyên</td>
+            <td style="color:var(--red);">❌ Xoá khỏi stage</td>
+            <td style="color:var(--amber);">🔄 Xoá commit</td>
+            <td style="color:var(--mute);">Muốn stage lại cẩn thận hơn</td>
+          </tr>
+          <tr style="background:rgba(255,97,97,0.05);">
+            <td><code style="font-family:monospace; color:var(--red); font-size:17px;">--hard</code></td>
+            <td style="color:var(--red);">❌ XOÁ VĨNH VIỄN</td>
+            <td style="color:var(--red);">❌ Xoá khỏi stage</td>
+            <td style="color:var(--amber);">🔄 Xoá commit</td>
+            <td style="color:var(--mute);">Muốn xoá hoàn toàn, không cần giữ</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout danger">
+        <strong>☠️ Nguy Hiểm:</strong> <code style="font-family:monospace; font-size:17px; color:var(--fg);">git reset --hard</code> sẽ <strong>XOÁ VĨNH VIỄN</strong> các thay đổi chưa commit trong Working Directory. Hãy chắc chắn 100% trước khi dùng! Nếu lỡ tay, dùng <code style="font-family:monospace; color:var(--amber);">git reflog</code> để khôi phục.
+      </div>
+      <pre class="term"><span class="cmd">git reset</span> <span class="flag">--soft</span>  HEAD~1   <span class="comment"># Bỏ commit, giữ code trong staging area</span>
+<span class="cmd">git reset</span> <span class="flag">--mixed</span> HEAD~1   <span class="comment"># Bỏ commit, giữ code trong working directory</span>
+<span class="cmd">git reset</span> <span class="flag">--hard</span>  HEAD~1   <span class="comment"># ☠️ Bỏ commit VÀ xoá code (cực nguy hiểm!)</span>
+<span class="cmd">git reset</span> <span class="flag">--hard</span>  HEAD~3   <span class="comment"># ☠️ Xoá 3 commit gần nhất và toàn bộ code</span></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 14 — CHERRY-PICK, WORKTREE & TAG
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Cherry-pick, Worktree & Tag">
+    <h2 class="slide-title">🛠️ Cherry-pick, Worktree &amp; Tag</h2>
+    <div class="grid grid-3" style="flex:1; gap:22px;">
+      <div class="card" style="border-top:3px solid var(--red);">
+        <h3>🍒 git cherry-pick</h3>
+        <p>Lấy đúng 1 (hoặc nhiều) commit từ nhánh khác, áp dụng vào nhánh hiện tại mà không merge toàn bộ nhánh.</p>
+        <pre class="term" style="font-size:15px; margin-top:14px;"><span class="comment"># Lấy 1 commit cụ thể</span>
+<span class="cmd">git cherry-pick</span> abc1234
+
+<span class="comment"># Lấy nhiều commit</span>
+<span class="cmd">git cherry-pick</span> abc1234 def5678
+
+<span class="comment"># Lấy dải commit</span>
+<span class="cmd">git cherry-pick</span> abc..def
+
+<span class="comment"># Chỉ stage, chưa commit</span>
+<span class="cmd">git cherry-pick</span> <span class="flag">-n</span> abc1234</pre>
+        <p style="margin-top:10px; color:var(--amber); font-size:16px;">💡 <strong style="color:var(--amber);">Dùng khi:</strong> Hotfix cần áp dụng lên nhiều branch, hoặc lấy 1 commit fix bug từ nhánh khác.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--green);">
+        <h3>🌳 git worktree</h3>
+        <p>Làm việc với <strong style="color:var(--green);">2 nhánh song song</strong> trong cùng lúc, không cần stash. Mỗi worktree là 1 thư mục riêng biệt.</p>
+        <pre class="term" style="font-size:15px; margin-top:14px;"><span class="comment"># Tạo worktree mới cho hotfix</span>
+<span class="cmd">git worktree add</span> <span class="str">../hotfix</span> hotfix/urgent
+
+<span class="comment"># Xem tất cả worktrees</span>
+<span class="cmd">git worktree list</span>
+
+<span class="comment"># Làm xong → dọn dẹp</span>
+<span class="cmd">git worktree remove</span> <span class="str">../hotfix</span></pre>
+        <p style="margin-top:10px; color:var(--green); font-size:16px;">💡 <strong style="color:var(--green);">Dùng khi:</strong> Đang code feature dở dang, cần chạy sang fix bug gấp mà không muốn commit code chưa xong.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--amber);">
+        <h3>🏷️ git tag</h3>
+        <p>Đánh dấu <strong style="color:var(--amber);">release version</strong> cụ thể trong lịch sử. Tag không di chuyển như branch — nó gắn chặt vào 1 commit.</p>
+        <pre class="term" style="font-size:15px; margin-top:14px;"><span class="comment"># Tạo annotated tag (khuyên dùng)</span>
+<span class="cmd">git tag</span> <span class="flag">-a</span> v1.0.0 <span class="flag">-m</span> <span class="str">"Release v1.0.0"</span>
+
+<span class="comment"># Xem tất cả tags</span>
+<span class="cmd">git tag</span> <span class="flag">-l</span>
+
+<span class="comment"># Push tags lên remote</span>
+<span class="cmd">git push</span> origin <span class="flag">--tags</span>
+
+<span class="comment"># Xoá tag</span>
+<span class="cmd">git tag</span> <span class="flag">-d</span> v1.0.0
+<span class="cmd">git push</span> origin <span class="flag">:refs/tags/</span>v1.0.0</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 15 — DIVIDER: Phần 4
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide divider" data-title="Phần 4">
+    <div class="num">04</div>
+    <div class="part-label">Phần Bốn</div>
+    <h1>Quy Trình Team<br>&amp; Git Hooks</h1>
+    <p class="sub">GitHub Flow · Conventional Commits · Tự Động Hoá</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 16 — QUY TRÌNH TEAM
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Quy Trình Team">
+    <h2 class="slide-title">👥 Quy Trình Làm Việc Nhóm Chuẩn Mực</h2>
+    <div class="cols-6-4" style="flex:1; gap:32px;">
+      <div>
+        <div style="margin-bottom:16px;">
+          <span class="section-label">6 Bước Quy Trình</span>
+          <div class="step-row">
+            <div class="step-num">1</div>
+            <div class="step-text"><code>git checkout develop &amp;&amp; git pull --rebase origin develop</code></div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">2</div>
+            <div class="step-text"><code>git checkout -b feature/ten-tinh-nang</code></div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">3</div>
+            <div class="step-text">Code... <code>git add -p</code> → <code>git commit -m "feat: thêm chức năng X"</code></div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">4</div>
+            <div class="step-text"><code>git push origin feature/ten-tinh-nang</code></div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">5</div>
+            <div class="step-text">Tạo <strong style="color:var(--blue);">Pull Request</strong> → Code Review với team</div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">6</div>
+            <div class="step-text">Merge vào <code>develop</code> (sau khi approved) với <code>--no-ff</code></div>
+          </div>
+        </div>
+        <div class="callout tip">
+          <strong>💡 Tip:</strong> Dùng <code style="font-family:monospace; color:var(--fg);">git add -p</code> để commit từng phần thay đổi. Commit nhỏ, rõ ràng = review nhanh hơn!
+        </div>
+      </div>
+      <div>
+        <span class="section-label">Branch Naming Convention</span>
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="chip">feature/</span>
+              <span style="font-size:18px; color:var(--mute);">Tính năng mới</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="chip">bugfix/</span>
+              <span style="font-size:18px; color:var(--mute);">Sửa lỗi thông thường</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="chip" style="border-color:var(--red); color:var(--red);">hotfix/</span>
+              <span style="font-size:18px; color:var(--mute);">Fix khẩn trên production</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="chip" style="border-color:var(--violet); color:var(--violet);">release/</span>
+              <span style="font-size:18px; color:var(--mute);">Chuẩn bị release</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px;">
+              <span class="chip" style="border-color:var(--green); color:var(--green);">chore/</span>
+              <span style="font-size:18px; color:var(--mute);">Bảo trì, CI/CD</span>
+            </div>
+          </div>
+        </div>
+        <svg viewBox="0 0 320 140" style="width:100%; background:var(--panel2); border-radius:10px; border:1px solid var(--line);">
+          <defs><marker id="abr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f05033"/></marker></defs>
+          <text x="160" y="22" text-anchor="middle" fill="#95a2b1" font-size="13" font-family="Be Vietnam Pro">GitHub Flow — Branching Model</text>
+          <rect x="10" y="40" width="60" height="24" rx="6" fill="#1d242e" stroke="#45c46f" stroke-width="1.5"/>
+          <text x="40" y="57" text-anchor="middle" fill="#45c46f" font-size="12" font-weight="700" font-family="JetBrains Mono">main</text>
+          <line x1="70" y1="52" x2="98" y2="52" stroke="#f05033" stroke-width="1.5" marker-end="url(#abr)"/>
+          <rect x="100" y="40" width="70" height="24" rx="6" fill="#1d242e" stroke="#59a8ff" stroke-width="1.5"/>
+          <text x="135" y="57" text-anchor="middle" fill="#59a8ff" font-size="12" font-weight="700" font-family="JetBrains Mono">develop</text>
+          <line x1="170" y1="45" x2="208" y2="30" stroke="#ab90ff" stroke-width="1.5" marker-end="url(#abr)"/>
+          <rect x="210" y="20" width="96" height="22" rx="6" fill="#1d242e" stroke="#ab90ff" stroke-width="1.5"/>
+          <text x="258" y="35" text-anchor="middle" fill="#ab90ff" font-size="11" font-family="JetBrains Mono">feature/xxx</text>
+          <line x1="170" y1="60" x2="208" y2="80" stroke="#f3bb4f" stroke-width="1.5" marker-end="url(#abr)"/>
+          <rect x="210" y="70" width="96" height="22" rx="6" fill="#1d242e" stroke="#f3bb4f" stroke-width="1.5"/>
+          <text x="258" y="85" text-anchor="middle" fill="#f3bb4f" font-size="11" font-family="JetBrains Mono">hotfix/xxx</text>
+          <line x1="258" y1="42" x2="140" y2="58" stroke="#ab90ff" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#abr)"/>
+          <line x1="258" y1="70" x2="40" y2="58" stroke="#f3bb4f" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#abr)"/>
+          <text x="160" y="125" text-anchor="middle" fill="#95a2b1" font-size="11" font-family="Be Vietnam Pro">PR → Review → Merge (--no-ff)</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 17 — CONVENTIONAL COMMITS
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Conventional Commits">
+    <h2 class="slide-title">✍️ Conventional Commits — Viết Commit Message Chuyên Nghiệp</h2>
+    <div class="callout info" style="margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-size:22px; text-align:center;">
+      &lt;<span style="color:var(--git);">type</span>&gt;(&lt;<span style="color:var(--violet);">scope</span>&gt;): &lt;<span style="color:var(--green);">description</span>&gt;
+    </div>
+    <div class="cols" style="flex:1; gap:28px;">
+      <table style="font-size:18px;">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Dùng Khi</th>
+            <th>Ví Dụ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--green);">feat</code></td>
+            <td>Thêm tính năng mới</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">feat(auth): thêm đăng nhập Google</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--red);">fix</code></td>
+            <td>Sửa bug</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">fix(cart): sửa lỗi tính tổng tiền</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--blue);">docs</code></td>
+            <td>Cập nhật tài liệu</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">docs(readme): thêm hướng dẫn setup</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--mute);">style</code></td>
+            <td>Format, không đổi logic</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">style: format theo prettier</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--violet);">refactor</code></td>
+            <td>Tái cấu trúc code</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">refactor(api): tách service layer</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--amber);">test</code></td>
+            <td>Thêm/sửa test</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">test(login): thêm unit test</td>
+          </tr>
+          <tr>
+            <td><code style="font-family:monospace; color:var(--mute);">chore</code></td>
+            <td>Bảo trì, dependencies</td>
+            <td style="font-size:15px; color:var(--mute); font-family:monospace;">chore: update dependencies</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="callout tip">
+          <strong>💡 Tại sao quan trọng?</strong><br>
+          Commit message tốt = tài liệu tự động cho team. <code style="font-family:monospace;">git log --oneline</code> sẽ đẹp như thơ! Và các tool như <strong>Semantic Release</strong> có thể tự động tạo CHANGELOG &amp; bump version.
+        </div>
+        <pre class="term" style="font-size:17px;"><span class="comment"># Xem log đẹp</span>
+<span class="cmd">git log</span> <span class="flag">--oneline</span> <span class="flag">--graph</span>
+
+<span class="comment"># Output mẫu:</span>
+<span class="str">* feat(auth): thêm đăng nhập Google</span>
+<span class="str">* fix(cart): sửa lỗi tính tổng tiền</span>
+<span class="str">* docs: cập nhật README</span>
+<span class="str">* chore: update dependencies</span></pre>
+        <div class="callout info" style="font-size:17px;">
+          <strong>Breaking change:</strong> Thêm <code style="font-family:monospace;">!</code> sau type: <code style="font-family:monospace; color:var(--red);">feat(api)!: thay đổi response format</code> → tự động tạo major version.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 18 — GIT HOOKS
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Git Hooks">
+    <h2 class="slide-title">🪝 Git Hooks — Tự Động Hoá Kiểm Soát Chất Lượng</h2>
+    <div style="flex:1; display:flex; flex-direction:column; gap:18px;">
+      <div class="grid grid-4" style="gap:18px;">
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <h3 style="color:var(--blue); font-size:20px;">pre-commit</h3>
+          <span style="font-size:13px; color:var(--mute);">🖥️ Chạy trên máy local</span>
+          <p style="margin-top:10px; font-size:17px;">Chạy linter &amp; formatter <strong style="color:var(--fg);">trước khi commit</strong>. Từ chối commit nếu code xấu, chưa đúng chuẩn.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--violet);">
+          <h3 style="color:var(--violet); font-size:20px;">commit-msg</h3>
+          <span style="font-size:13px; color:var(--mute);">🖥️ Chạy trên máy local</span>
+          <p style="margin-top:10px; font-size:17px;">Kiểm tra <strong style="color:var(--fg);">format commit message</strong>. Từ chối nếu không theo Conventional Commits.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--amber);">
+          <h3 style="color:var(--amber); font-size:20px;">pre-push</h3>
+          <span style="font-size:13px; color:var(--mute);">🖥️ Chạy trên máy local</span>
+          <p style="margin-top:10px; font-size:17px;">Chạy <strong style="color:var(--fg);">test suite</strong> trước khi push. Chặn push nếu có test fail — không push code hỏng!</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--red);">
+          <h3 style="color:var(--red); font-size:20px;">pre-receive</h3>
+          <span style="font-size:13px; color:var(--mute);">☁️ Chạy phía server</span>
+          <p style="margin-top:10px; font-size:17px;">Kiểm tra <strong style="color:var(--fg);">phía server</strong>. Từ chối push vi phạm policy — tuyến phòng thủ cuối cùng.</p>
+        </div>
+      </div>
+      <div>
+        <span class="section-label">Setup với Husky + lint-staged (Node.js)</span>
+        <pre class="term" style="font-size:18px;"><span class="comment"># Cài Husky — tự động manage git hooks</span>
+<span class="cmd">npx husky-init</span> &amp;&amp; npm install
+
+<span class="comment"># Thêm pre-commit hook: chạy lint-staged</span>
+<span class="cmd">npx husky add</span> .husky/pre-commit <span class="str">"npx lint-staged"</span>
+
+<span class="comment"># Thêm commit-msg hook: kiểm tra conventional commits</span>
+<span class="cmd">npx husky add</span> .husky/commit-msg <span class="str">"npx commitlint --edit $1"</span>
+
+<span class="comment"># Thêm pre-push hook: chạy tests</span>
+<span class="cmd">npx husky add</span> .husky/pre-push <span class="str">"npm test"</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 19 — DIVIDER: Phần 5
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide divider" data-title="Phần 5">
+    <div class="num">05</div>
+    <div class="part-label">Phần Năm</div>
+    <h1>7 Tình Huống Thực Chiến<br>&amp; Cứu Nguy Sự Cố</h1>
+    <p class="sub">Từ Merge Conflict Đến Rò Rỉ Secret — Không Tình Huống Nào Phải Hoảng Loạn</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 20 — TÌNH HUỐNG 1-4
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Tình Huống 1-4">
+    <h2 class="slide-title">🔥 Các Tình Huống Thực Chiến (1–4)</h2>
+    <div class="grid grid-2" style="flex:1; gap:18px;">
+      <div class="card" style="border-left:4px solid var(--red);">
+        <h3 style="font-size:21px;">😱 1. Lỡ Commit Vào Nhánh Sai</h3>
+        <pre class="term" style="font-size:15px;"><span class="cmd">git reset</span> <span class="flag">--soft</span> HEAD~1 <span class="comment"># lấy lại commit → staged</span>
+<span class="cmd">git stash</span>              <span class="comment"># cất tạm code</span>
+<span class="cmd">git checkout</span> correct-branch
+<span class="cmd">git stash pop</span>          <span class="comment"># lấy code ra</span>
+<span class="cmd">git commit</span> <span class="flag">-m</span> <span class="str">"feat: ..."</span></pre>
+      </div>
+      <div class="card" style="border-left:4px solid var(--amber);">
+        <h3 style="font-size:21px;">💥 2. Merge Conflict Không Giải Quyết Được</h3>
+        <pre class="term" style="font-size:15px;"><span class="cmd">git merge</span> feature/abc    <span class="comment"># conflict!</span>
+<span class="comment"># Mở file, sửa conflict markers:</span>
+<span class="comment"># &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD  ... =======  ... &gt;&gt;&gt;&gt;&gt;&gt;&gt;</span>
+<span class="cmd">git add</span> .
+<span class="cmd">git commit</span> <span class="flag">-m</span> <span class="str">"merge: resolve conflict"</span>
+<span class="comment"># Hoặc huỷ toàn bộ merge:</span>
+<span class="cmd">git merge</span> <span class="flag">--abort</span></pre>
+      </div>
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3 style="font-size:21px;">📦 3. Pull Giữ Lịch Sử Sạch</h3>
+        <pre class="term" style="font-size:15px;"><span class="comment"># ❌ Tạo merge commit thừa</span>
+<span class="cmd">git pull</span> origin main
+
+<span class="comment"># ✅ Pull sạch, không merge commit</span>
+<span class="cmd">git pull</span> <span class="flag">--rebase</span> origin main
+
+<span class="comment"># Cấu hình mặc định</span>
+<span class="cmd">git config</span> <span class="flag">--global</span> pull.rebase <span class="str">true</span></pre>
+      </div>
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3 style="font-size:21px;">⚠️ 4. Đồng Đội Force Push, Branch Bị Lệch</h3>
+        <pre class="term" style="font-size:15px;"><span class="cmd">git fetch</span> origin
+<span class="cmd">git reset</span> <span class="flag">--hard</span> origin/feature/abc
+<span class="comment"># ☠️ Mất code local!</span>
+
+<span class="comment"># Khôi phục bằng reflog:</span>
+<span class="cmd">git reflog</span>
+<span class="cmd">git checkout</span> <span class="flag">-b</span> recovery &lt;hash&gt;</pre>
+        <p style="font-size:16px; color:var(--amber); margin-top:8px;">💡 Luôn dùng <code style="font-family:monospace;">git reflog</code> trước khi panic!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 21 — TÌNH HUỐNG 5-7 & REFLOG
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Tình Huống 5-7 & Reflog">
+    <h2 class="slide-title">🆘 Các Tình Huống Thực Chiến (5–7) &amp; Phao Cứu Sinh reflog</h2>
+    <div style="flex:1; display:flex; flex-direction:column; gap:16px;">
+      <div class="grid grid-3" style="gap:16px;">
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3 style="font-size:20px;">🧹 5. Gộp Commit Lộn Xộn</h3>
+          <p style="font-size:16px; margin-bottom:10px;">Squash nhiều "WIP" commit thành 1 commit sạch trước khi merge PR.</p>
+          <pre class="term" style="font-size:14px;"><span class="comment"># Interactive rebase</span>
+<span class="cmd">git rebase</span> <span class="flag">-i</span> HEAD~4
+
+<span class="comment"># Trong editor, đổi:</span>
+<span class="comment"># 'pick' → 's' (squash)</span>
+<span class="comment"># để gộp vào commit trước</span></pre>
+        </div>
+        <div class="card" style="border-left:4px solid var(--violet);">
+          <h3 style="font-size:20px;">🕵️ 6. Lỡ reset --hard, Muốn Lấy Lại</h3>
+          <p style="font-size:16px; margin-bottom:10px;">Code "mất" sau reset --hard thực ra vẫn còn trong reflog!</p>
+          <pre class="term" style="font-size:14px;"><span class="comment"># Xem toàn bộ lịch sử HEAD</span>
+<span class="cmd">git reflog</span>
+
+<span class="comment"># Tìm hash trước khi reset</span>
+<span class="comment"># Tạo branch từ commit đó</span>
+<span class="cmd">git checkout</span> <span class="flag">-b</span> recovery abc1234</pre>
+        </div>
+        <div class="card" style="border-left:4px solid var(--red);">
+          <h3 style="font-size:20px;">🔑 7. Lỡ Push Secret/Token</h3>
+          <p style="font-size:16px; margin-bottom:10px;">Secret trong git history = PUBLIC. Phải hành động ngay!</p>
+          <pre class="term" style="font-size:14px;"><span class="comment"># B1: Thu hồi token NGAY TRÊN PROVIDER!</span>
+<span class="comment"># B2: Xoá khỏi git history</span>
+<span class="cmd">git filter-repo</span> <span class="flag">--path</span> .env <span class="flag">--invert-paths</span>
+<span class="cmd">git push</span> origin <span class="flag">--force --all</span>
+<span class="comment"># B3: Thêm vào .gitignore</span>
+<span class="str">echo ".env" >> .gitignore</span></pre>
+        </div>
+      </div>
+      <div class="callout warn" style="font-size:19px; padding:22px 28px;">
+        <strong style="font-size:22px;">🆘 git reflog — Phao Cứu Sinh Cuối Cùng</strong><br><br>
+        <code style="font-family:monospace; color:var(--fg); font-size:18px;">git reflog</code> ghi nhận <strong>MỌI</strong> thao tác di chuyển HEAD, kể cả <code style="font-family:monospace; color:var(--fg);">reset --hard</code>, <code style="font-family:monospace; color:var(--fg);">checkout</code>, <code style="font-family:monospace; color:var(--fg);">rebase</code>. &nbsp;→&nbsp; Không có gì thực sự mất trong Git cho đến khi <strong>garbage collection</strong> chạy (~30 ngày). Khi hoảng loạn, hãy luôn chạy <code style="font-family:monospace; color:var(--fg);">git reflog</code> trước!
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 22 — KAHOOT & KẾT THÚC
+  ═══════════════════════════════════════════════════════ -->
+  <section class="slide" data-title="Kahoot & Kết Thúc">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:0;">
+      <div style="font-size:120px; line-height:1; margin-bottom:16px;">🎮</div>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-size:72px; font-weight:800; color:var(--git); margin-bottom:12px; line-height:1.1;">Đến Giờ Đấu Trí Rồi!</h2>
+      <p style="font-size:28px; color:var(--mute); margin-bottom:40px;">12 câu hỏi trắc nghiệm đang chờ bạn</p>
+      <div class="grid grid-3" style="gap:24px; width:100%; margin-bottom:36px;">
+        <div class="card" style="text-align:center; border-top:3px solid var(--blue);">
+          <div style="font-size:40px; margin-bottom:10px;">📱</div>
+          <h3 style="color:var(--blue); font-size:22px; margin-bottom:8px;">Bước 1</h3>
+          <p style="font-size:19px;">Mở điện thoại → vào <strong style="color:var(--fg);">kahoot.it</strong></p>
+        </div>
+        <div class="card" style="text-align:center; border-top:3px solid var(--git);">
+          <div style="font-size:40px; margin-bottom:10px;">🎯</div>
+          <h3 style="color:var(--git); font-size:22px; margin-bottom:8px;">Bước 2</h3>
+          <p style="font-size:19px;">Nhập <strong style="color:var(--git);">mã game</strong> từ màn hình</p>
+        </div>
+        <div class="card" style="text-align:center; border-top:3px solid var(--amber);">
+          <div style="font-size:40px; margin-bottom:10px;">🏆</div>
+          <h3 style="color:var(--amber); font-size:22px; margin-bottom:8px;">Bước 3</h3>
+          <p style="font-size:19px;">Đấu trí &amp; giành <strong style="color:var(--amber);">TOP 3!</strong></p>
+        </div>
+      </div>
+      <div style="background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:22px 48px; margin-bottom:28px; width:100%;">
+        <p style="font-size:20px; color:var(--mute); margin-bottom:8px;">Sau Kahoot — Q&amp;A &amp; Cheat Sheet</p>
+        <p style="font-size:19px; color:var(--fg);">📋 Git Cheat Sheet sẽ được chia sẻ trong nhóm chat &nbsp;·&nbsp; Mọi câu hỏi về Git → hãy hỏi ngay! 🙋</p>
+      </div>
+      <pre class="term" style="font-size:24px; padding:16px 36px; border-color:var(--green);">
+<span class="cmd">git commit</span> <span class="flag">-m</span> <span class="str">"workshop: completed successfully 🎉"</span></pre>
+    </div>
+  </section>
+
+</div>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- Keyboard hint -->
+<div class="kbd-hint">
+  <span><kbd>←</kbd> <kbd>→</kbd> Chuyển slide</span>
+  <span><kbd>Space</kbd> Tiếp</span>
+  <span><kbd>M</kbd> Mục lục</span>
+  <span><kbd>F</kbd> Toàn màn hình</span>
+</div>
+
+<!-- Floating Navigation Controls -->
+<div id="nav-controls">
+  <button class="nav-btn" id="btn-prev" title="Slide trước (←)">❮ Trước</button>
+  <span id="counter">1 / 22</span>
+  <button class="nav-btn" id="btn-next" title="Slide tiếp (→ hoặc Space)">Tiếp ❯</button>
+  <button class="nav-btn" id="btn-menu" title="Mục lục Slide (M)">☰ Slide</button>
+  <button class="nav-btn" id="btn-fs" title="Toàn màn hình (F)">⛶</button>
+</div>
+
+<!-- Slide Jump Modal -->
+<div id="slide-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>📋 Danh Sách Slide (22 Slide)</h3>
+      <button class="modal-close" id="close-modal">&times;</button>
+    </div>
+    <div class="modal-grid" id="modal-slides-list"></div>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const modal = document.getElementById('slide-modal');
+  const modalList = document.getElementById('modal-slides-list');
+
+  // Build slide thumbnails for modal
+  slides.forEach((s, idx) => {
+    const title = s.getAttribute('data-title') || ('Slide ' + (idx + 1));
+    const isDivider = s.classList.contains('divider');
+    const div = document.createElement('div');
+    div.className = 'slide-thumb' + (idx === 0 ? ' current' : '');
+    div.innerHTML = `
+      <div class="thumb-num">${String(idx + 1).padStart(2, '0')}${isDivider ? ' · CHƯƠNG' : ''}</div>
+      <div class="thumb-title">${title}</div>
+    `;
+    div.addEventListener('click', () => {
+      goTo(idx);
+      closeSlideModal();
+    });
+    modalList.appendChild(div);
+  });
+
+  function toggleSlideModal() {
+    if (modal.classList.contains('open')) closeSlideModal();
+    else openSlideModal();
+  }
+  function openSlideModal() {
+    // update current highlighted thumbnail
+    modalList.querySelectorAll('.slide-thumb').forEach((t, i) => {
+      t.classList.toggle('current', i === current);
+    });
+    modal.classList.add('open');
+  }
+  function closeSlideModal() {
+    modal.classList.remove('open');
+  }
+
+  document.getElementById('btn-menu').addEventListener('click', toggleSlideModal);
+  document.getElementById('close-modal').addEventListener('click', closeSlideModal);
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeSlideModal();
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    const pct = slides.length > 1 ? (current / (slides.length - 1)) * 100 : 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  document.getElementById('btn-next').addEventListener('click', next);
+  document.getElementById('btn-prev').addEventListener('click', prev);
+  document.getElementById('btn-fs').addEventListener('click', toggleFullscreen);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (modal.classList.contains('open')) {
+      if (e.key === 'Escape') { closeSlideModal(); e.preventDefault(); return; }
+    }
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); next();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+      e.preventDefault(); prev();
+    } else if (e.key === 'Home') {
+      e.preventDefault(); goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault(); goTo(slides.length - 1);
+    } else if (e.key === 'm' || e.key === 'M') {
+      e.preventDefault(); toggleSlideModal();
+    } else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault(); toggleFullscreen();
+    } else if (e.key === 'Escape' && document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  });
+
+  function scaleStage() {
+    const stage = document.getElementById('stage');
+    const scaleX = window.innerWidth / 1920;
+    const scaleY = window.innerHeight / 1080;
+    const scale = Math.min(scaleX, scaleY);
+    stage.style.transform = 'scale(' + scale + ')';
+  }
+  window.addEventListener('resize', scaleStage);
+  scaleStage();
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+  }, { passive: true });
+
+  // Stage click: advances only if not selecting text and not clicking inside interactive elements
+  document.getElementById('stage').addEventListener('click', e => {
+    if (window.getSelection().toString().trim().length > 0) return;
+    if (e.target.closest('pre, code, table, a, button, input, select, .card, .diagram')) return;
+    if (e.clientX > window.innerWidth / 2) next(); else prev();
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>
