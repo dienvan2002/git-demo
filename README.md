@@ -14,4 +14,5 @@
 | **6** | **Lỡ `reset --hard` hoặc xóa nhầm nhánh mất code**        | `git reflog`<br>`git switch -c <nhánh-cứu> <hash-cũ>`                                                                                                                                                        | `reflog` lưu nhật ký di chuyển `HEAD` trong 30–90 ngày.                                     |
 | **7** | **Lỡ đẩy nhầm `.env` / API Key / Mật khẩu**               | **1.** Revoke/Rotate key ngay lập tức.<br>**2.** Local: `git rm --cached .env`, thêm vào `.gitignore`, rồi `git commit --amend`.<br>**3.** Remote: dùng `git-filter-repo` hoặc BFG Repo-Cleaner xóa lịch sử. | Đổi key/mật khẩu là ưu tiên số 1 trước khi xử lý lịch sử Git.                               |
 
-test
+test1
+test rebase
